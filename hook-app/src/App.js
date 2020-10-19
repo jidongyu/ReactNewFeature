@@ -113,7 +113,7 @@ function App4() {
    useEffect()执行函数方法副作用,每次渲染完会执行useEffect()方法
    清除工作是非常重要的，可以防止引起内存泄露！
    如果你的 effect 返回一个函数，React 将会在执行清除操作时调用它 
-   如果某些特定值在两次重渲染之间没有发生变化，你可以通知 React 跳过对 effect 的调用，只要传递数组作为 useEffect 的第二个可选参数即可
+   如果某些特定值在两次重渲染之间没有发生变化，你可以通知 React 跳过对 effect 的调用，只要传递数组作为 useEffect 的第二个可选参数即可,并且只有当第二个参数中的所有参数都不变的时候才会跳过useEffect处理，否则只要有一个改变就会调用useEffect渲染
    useEffect(() => {
   document.title = `You clicked ${count} times`;
 }, [count]); // 仅在 count 更改时更新
