@@ -1,4 +1,4 @@
-import React, { Component, useState, useEffect } from 'react';
+import React, { Component, useState, useEffect, createContext, useContext, useMemo, memo, useCallback, useRef, PureComponent } from 'react';
 import logo from './logo.svg';
 import './App.css';
 
@@ -195,7 +195,7 @@ function App6() {
 
   )
 }
-function App() {
+function App7() {
   const [count, setCount] = useState(0);
   const [name, setName] = useState('Mojito');
   useEffect(() => {
@@ -223,9 +223,9 @@ function App() {
     console.log('click');
   }
   useEffect(() => {
-    document.querySelector('#size').addEventListener('click',onClick,false);
+    document.querySelector('#size').addEventListener('click', onClick, false);
     return () => {
-      document.querySelector('#size').removeEventListener('click',onClick,false);
+      document.querySelector('#size').removeEventListener('click', onClick, false);
     }
   })
   return (
@@ -251,5 +251,175 @@ function App() {
   )
 }
 
+/*
+   useContext 
+   createContext(default)中可以设置初始的context Value
+   一个context由context.Provider和context.Consumer共同协作完成，需要跨层级传递的变量value需要放到Provider中，且变量名一定要命名为vlaue
+   <Context.Consumer>包含一个参数为就近provider提供的value,并且返回一个渲染组件的函数
+   contextType
+ */
+const CountContext = createContext();
+// 原始用法
+function ChildrenApp(propps) {
+  return (
+    <CountContext.Consumer>
+      {
+        count => {
+          return (
+            <div>
+              <h1>{count}</h1>
+            </div>
+          )
+        }
+      }
+    </CountContext.Consumer>
+  )
+}
+// contextType
+class Bar extends Component {
+  static contextType = CountContext;
+  render() {
+    return (
+      <div>
+        <h2>{this.context}</h2>
+      </div>
+    )
+  }
+}
+function Count() {
+  const count = useContext(CountContext);
+  return (
+    <div>
+      <h3>{count}</h3>
+    </div>
+  )
+}
+class App8 extends Component {
+  constructor(propps) {
+    super(propps);
+    this.state = {
+      count: 0
+    }
+  }
+  render() {
+    return (
+      <React.Fragment>
+        <button onClick={() => {
+          let count = this.state.count + 1;
+          this.setState({
+            count
+          })
+        }}>
+          click({this.state.count})
+        </button>
+        <CountContext.Provider value={this.state.count}>
+          <ChildrenApp></ChildrenApp>
+          <Bar></Bar>
+          <Count></Count>
+        </CountContext.Provider>
+      </React.Fragment>
+
+    )
+  }
+}
+/* memo和useMemo
+   memo和useMemo都是对组件的一种性能优化，memo是通过判断组件渲染是否重复来进行优化的，useMemo是通过判断一个函数逻辑是否重复来进行优化的
+   useMemo和useEffect的使用语法相似，都有由一个函数和一个变更依据数组组成，当不传入数组时useMemo和useEffect每次渲染时都会执行，当传入空数组时useMemo和useEffect只执行一次
+   useMemo和useEffect的不同之处在于useEffect是在函数渲染之后执行的副作用，useMemo是在渲染时执行的,与渲染息息相关
+ */
+function Count2(propps) {
+
+  return (
+    <div>
+      <h3>{propps.count}</h3>
+    </div>
+  )
+}
+function App9() {
+  const [count, setCount] = useState(0);
+  const daboule = useMemo(() => {
+    return count * 2
+  }, [count === 3])
+  return (
+    <React.Fragment>
+      <button onClick={() => {
+        setCount(count + 1)
+      }}>
+        click({count})
+        </button>
+      <Count2 count={daboule}></Count2>
+    </React.Fragment>
+
+  )
+}
+
+const Counter = memo(function Count3(props) {
+  console.log('conter render');
+  return (
+    <div>
+      <h3 onClick={props.onClick}>{props.count}</h3>
+    </div>
+  )
+})
+function App10() {
+  const [count, setCount] = useState(0);
+  const daboule = useMemo(() => {
+    return count * 2
+  }, [count === 3])
+  const onClickTest = useCallback(() => {
+    console.log('app click');
+  }, [])
+  return (
+    <React.Fragment>
+      <button onClick={() => {
+        setCount(count + 1)
+      }}>
+        click({count})
+        </button>
+      <Counter count={daboule} onClick={onClickTest}></Counter>
+    </React.Fragment>
+
+  )
+}
+/*
+    useRef
+    函数组件是没有句柄的， 因此要想在某个组件中使用ref需要将其转换为class类组件
+ */
+class Counter2 extends PureComponent {
+  asck = () => {
+    console.log('当前count是'+this.props.count);
+  }
+  render() {
+    const { props } = this;
+    console.log('conter render');
+    return (
+      <div>
+        <h3 onClick={props.onClick}>{props.count}</h3>
+      </div>
+    )
+  }
+}
+function App() {
+  const countRef = useRef();
+  const [count, setCount] = useState(0);
+  const daboule = useMemo(() => {
+    return count * 2
+  }, [count === 3])
+  const onClickTest = useCallback(() => {
+    console.log('app click');
+    countRef.current.asck();
+  }, [countRef])
+  return (
+    <React.Fragment>
+      <button onClick={() => {
+        setCount(count + 1)
+      }}>
+        click({count})
+        </button>
+      <Counter2 ref={countRef} count={daboule} onClick={onClickTest}></Counter2>
+    </React.Fragment>
+
+  )
+}
 
 export default App;
